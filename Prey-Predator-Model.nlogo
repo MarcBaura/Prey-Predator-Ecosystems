@@ -39,6 +39,7 @@ to go
   move-animals
   update-lives
   reproduce
+  regrow
   tick
 end
 
@@ -110,7 +111,22 @@ to reproduce
   ]
 end
 
+;to regrow
+;  ask patches [
+;    if (1 + random 100) < leaves-regrow-rate [set pcolor green]
+;  ]
+;end
 
+to regrow
+
+  if (ticks mod regrow-by-tick) = 0 [
+    ask patches [
+      if pcolor = brown [
+        if (1 + random 100) < leaves-regrow-rate [set pcolor green]
+      ]
+    ]
+  ]
+end
 
 to-report coin-flip?
   report random 2 = 0
@@ -144,10 +160,10 @@ ticks
 30.0
 
 BUTTON
-21
-196
-85
-230
+249
+28
+313
+62
 NIL
 setup\n
 NIL
@@ -161,10 +177,10 @@ NIL
 1
 
 BUTTON
-124
-196
-187
-229
+248
+90
+311
+123
 NIL
 go\n
 T
@@ -208,10 +224,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-20
-130
-193
-164
+23
+111
+196
+144
 leaves-percentage
 leaves-percentage
 0
@@ -226,7 +242,7 @@ SLIDER
 23
 269
 196
-303
+302
 max-hawk-movement
 max-hawk-movement
 0
@@ -241,7 +257,7 @@ SLIDER
 8
 322
 203
-356
+355
 max-caterpillar-movement
 max-caterpillar-movement
 0
@@ -256,7 +272,7 @@ SLIDER
 22
 390
 195
-424
+423
 energy-from-leaves
 energy-from-leaves
 1
@@ -271,7 +287,7 @@ SLIDER
 22
 439
 195
-473
+472
 energy-from-prey
 energy-from-prey
 1
@@ -286,12 +302,12 @@ SLIDER
 13
 495
 226
-529
+528
 reproduce-caterpillar-percent
 reproduce-caterpillar-percent
 0
 100
-100.0
+5.0
 1
 1
 NIL
@@ -301,12 +317,42 @@ SLIDER
 24
 537
 212
-571
+570
 reproduce-hawk-percent
 reproduce-hawk-percent
 01
 100
-100.0
+5.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+21
+151
+194
+185
+leaves-regrow-rate
+leaves-regrow-rate
+0
+100
+15.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+19
+194
+192
+228
+regrow-by-tick
+regrow-by-tick
+1
+100
+50.0
 1
 1
 NIL
