@@ -6,4 +6,4 @@ A model that showcases the Hawk, Caterpillar, and Leaf Ecosystem.
 
 **Caterpillar (Prey)** - Locates and eats caterpillars within their vision range to replenish their energy. Otherwise, it will travel randomly.
 
-**Leaves (Food)** - The infinite food source of energy for the caterpillar.
+**Leaves (Food)** - The food source of energy for the caterpillar.
