@@ -1,35 +1,56 @@
+breed [leaves leaf]
 breed [caterpillars caterpillar]
 breed [hawks hawk]
+
+
 turtles-own
 [
   energy
+  lastmovement
 ]
+
+
 
 to setup
   clear-all
   reset-ticks
 
+
   ask patches [
-    ifelse (1 + random 100) > leaves-percentage [set pcolor brown] [set pcolor green]
+  set pcolor brown
+  ]
+
+  create-leaves (1 + random max-leaves)[
+    ht
+    set color green
+    set size 2
+    set shape "leaf"
+    setxy round(random-xcor) round(random-ycor)
+    rt random 360
+    st
   ]
 
 
   set-default-shape caterpillars "caterpillar"
-  create-caterpillars (1 + random max-caterpillars) [
+  create-caterpillars num-caterpillars [
+    ht
   	set color yellow
-    set size 3
+    set size 2
     set energy 1 + random 100
     set label energy
     setxy round(random-xcor) round(random-ycor)
+    st
   ]
 
   set-default-shape hawks "hawk"
-  create-hawks (1 + random (max-hawks - 1)) [
+  create-hawks num-hawks [
+    ht
   	set color white
-    set size 3
+    set size 4
     set energy 1 + random 100
     set label energy
     setxy round(random-xcor) round(random-ycor)
+    st
   ]
 
 end
@@ -44,28 +65,71 @@ to go
 end
 
 to move-animals
-  move-hawks
   move-caterpillars
+  move-hawks
 end
 
 to move-hawks
+  let movement-value max-hawk-movement
+
+
   ask hawks [
-    let move-forward random max-hawk-movement   ; How far hawk moves
-    if move-forward > energy [set move-forward energy]
-    rt random 360
-    fd move-forward
-    set energy (energy - move-forward)
+    ifelse any? caterpillars in-radius eagle-vision
+    [
+      ifelse not any? caterpillars in-radius movement-value [
+        face min-one-of caterpillars [distance myself]
+        fd movement-value
+        set energy (energy - movement-value)
+      ]
+
+      [
+        set movement-value round(distance min-one-of caterpillars [distance myself])
+        move-to min-one-of caterpillars [distance myself]
+        set energy (energy - movement-value)
+      ]
+    ]
+
+    [
+      let move-forward random max-hawk-movement   ; How far hawk moves
+      if move-forward > energy [set move-forward energy]
+      rt random 360
+      fd move-forward
+
+      set energy (energy - move-forward)
+    ]
+
     set label energy
   ]
 end
 
 to move-caterpillars
+  let movement-value random max-caterpillar-movement
+
   ask caterpillars [
-    let move-forward random max-caterpillar-movement ; How far caterpillar moves
-    if move-forward > energy [set move-forward energy]
-    rt random 360
-    fd move-forward
-    set energy (energy - move-forward)
+
+    ifelse any? leaves in-radius caterpillar-vision
+    [
+      ifelse not any? leaves in-radius movement-value [
+        face min-one-of leaves [distance myself]
+        fd movement-value
+        set energy (energy - movement-value)
+      ]
+
+      [
+        set movement-value round(distance min-one-of leaves [distance myself])
+        move-to min-one-of leaves [distance myself]
+        set energy (energy - movement-value)
+      ]
+    ]
+
+    [
+      let move-forward random max-caterpillar-movement ; How far caterpillar moves
+      if move-forward > energy [set move-forward energy]
+      rt random 360
+      fd move-forward
+      set energy (energy - move-forward)
+    ]
+
     set label energy
   ]
 end
@@ -77,9 +141,9 @@ end
 
 to update-caterpillars
   ask caterpillars [
-    if pcolor = green [
-      set pcolor brown
-      set energy (energy + energy-from-leaves)   ; How much leaves replenish energy
+    if any? leaves-here [
+      ask one-of leaves-here [die]
+      set energy (energy + energy-from-leaves)   ; How much caterpillar replenish energy
     ]
 
     if energy <= 0 [die]
@@ -90,7 +154,7 @@ to update-hawks
   ask hawks [
     if any? caterpillars-here [
       ask one-of caterpillars-here [die]
-      set energy (energy + energy-from-prey)   ; How much caterpillar replenish energy
+      set energy (energy + energy-from-caterpillar)   ; How much caterpillar replenish energy
     ]
 
     if energy <= 0 [die]
@@ -98,15 +162,21 @@ to update-hawks
 end
 
 to reproduce
-  ask caterpillars [
-    if (1 + random 100) < reproduce-caterpillar-percent [
-      hatch 1 [ rt random-float 360 fd 1 ]
+  if ticks > 0 and (ticks mod caterpillar-reproduce-tick) = 0
+  [
+    ask caterpillars [
+      if (1 + random 100) < reproduce-caterpillar-percent [
+        hatch 1 [ rt random-float 360 fd 1 ]
+      ]
     ]
   ]
 
-  ask hawks [
-    if (1 + random 100) < reproduce-hawk-percent [
-      hatch 1 [ rt random-float 360 fd 1 ]
+  if ticks > 0 and (ticks mod hawk-reproduce-tick) = 0
+  [
+    ask hawks [
+      if (1 + random 100) < reproduce-hawk-percent [
+        hatch 1 [ rt random-float 360 fd 1 ]
+      ]
     ]
   ]
 end
@@ -120,10 +190,11 @@ end
 to regrow
 
   if (ticks mod regrow-by-tick) = 0 [
-    ask patches [
-      if pcolor = brown [
-        if (1 + random 100) < leaves-regrow-rate [set pcolor green]
-      ]
+    create-leaves (1 + random leaves-regrow-rate) [
+    set color green
+    set size 2
+    set shape "leaf"
+    setxy round(random-xcor) round(random-ycor)
     ]
   ]
 end
@@ -133,10 +204,10 @@ to-report coin-flip?
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-354
-8
-791
-446
+492
+6
+929
+444
 -1
 -1
 13.0
@@ -160,10 +231,10 @@ ticks
 30.0
 
 BUTTON
-249
-28
-313
-62
+57
+278
+121
+312
 NIL
 setup\n
 NIL
@@ -177,10 +248,10 @@ NIL
 1
 
 BUTTON
-248
-90
-311
-123
+61
+322
+124
+355
 NIL
 go\n
 T
@@ -194,58 +265,178 @@ NIL
 1
 
 SLIDER
-21
-15
-193
-48
-max-caterpillars
-max-caterpillars
+6
+8
+178
+41
+num-caterpillars
+num-caterpillars
 1
 100
-1.0
+60.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-20
+5
+55
+177
+88
+num-hawks
+num-hawks
+1
+100
+2.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+8
+104
+181
+137
+leaves-percentage
+leaves-percentage
+0
+100
+75.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+202
+8
+375
+41
+max-hawk-movement
+max-hawk-movement
+0
+100
+8.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+187
 62
-192
+382
 95
-max-hawks
-max-hawks
-1
+max-caterpillar-movement
+max-caterpillar-movement
+0
 100
-1.0
+7.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-23
-111
-196
+201
+129
+374
+162
+energy-from-leaves
+energy-from-leaves
+1
+100
+7.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+201
+178
+379
+211
+energy-from-caterpillar
+energy-from-caterpillar
+1
+100
+7.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+192
+234
+405
+267
+reproduce-caterpillar-percent
+reproduce-caterpillar-percent
+0
+100
+25.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+203
+277
+391
+310
+reproduce-hawk-percent
+reproduce-hawk-percent
+01
+100
+10.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+6
 144
-leaves-percentage
-leaves-percentage
+179
+177
+leaves-regrow-rate
+leaves-regrow-rate
 0
 100
-1.0
+40.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-23
-269
-196
-302
-max-hawk-movement
-max-hawk-movement
+25
+192
+198
+225
+regrow-by-tick
+regrow-by-tick
+1
+100
+3.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
 0
+226
+172
+259
+max-leaves
+max-leaves
+1
 100
 100.0
 1
@@ -254,12 +445,42 @@ NIL
 HORIZONTAL
 
 SLIDER
-8
-322
-203
-355
-max-caterpillar-movement
-max-caterpillar-movement
+212
+324
+385
+357
+eagle-vision
+eagle-vision
+1
+100
+10.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+217
+368
+390
+401
+caterpillar-vision
+caterpillar-vision
+1
+100
+5.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+7
+368
+196
+401
+caterpillar-reproduce-tick
+caterpillar-reproduce-tick
 0
 100
 10.0
@@ -269,87 +490,12 @@ NIL
 HORIZONTAL
 
 SLIDER
-22
-390
-195
-423
-energy-from-leaves
-energy-from-leaves
-1
-100
-50.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-22
-439
-195
-472
-energy-from-prey
-energy-from-prey
-1
-100
-50.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-13
-495
-226
-528
-reproduce-caterpillar-percent
-reproduce-caterpillar-percent
-0
-100
-5.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-24
-537
-212
-570
-reproduce-hawk-percent
-reproduce-hawk-percent
-01
-100
-5.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-21
-151
-194
-185
-leaves-regrow-rate
-leaves-regrow-rate
-0
-100
-15.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-19
-194
-192
-228
-regrow-by-tick
-regrow-by-tick
+11
+407
+184
+440
+hawk-reproduce-tick
+hawk-reproduce-tick
 1
 100
 50.0
@@ -575,10 +721,10 @@ Polygon -7500403 true true 15 120 150 15 285 120
 Line -16777216 false 30 120 270 120
 
 leaf
-false
+true
 0
-Polygon -7500403 true true 150 210 135 195 120 210 60 210 30 195 60 180 60 165 15 135 30 120 15 105 40 104 45 90 60 90 90 105 105 120 120 120 105 60 120 60 135 30 150 15 165 30 180 60 195 60 180 120 195 120 210 105 240 90 255 90 263 104 285 105 270 120 285 135 240 165 240 180 270 195 240 210 180 210 165 195
-Polygon -7500403 true true 135 195 135 240 120 255 105 255 105 285 135 285 165 240 165 195
+Polygon -7500403 true true 150 90 135 105 120 90 60 90 30 105 60 120 60 135 15 165 30 180 15 195 40 196 45 210 60 210 90 195 105 180 120 180 105 240 120 240 135 270 150 285 165 270 180 240 195 240 180 180 195 180 210 195 240 210 255 210 263 196 285 195 270 180 285 165 240 135 240 120 270 105 240 90 180 90 165 105
+Polygon -7500403 true true 135 105 135 60 120 45 105 45 105 15 135 15 165 60 165 105
 
 line
 true
