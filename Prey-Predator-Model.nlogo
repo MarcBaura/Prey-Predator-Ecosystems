@@ -56,7 +56,9 @@ to setup
 end
 
 to go
-  if not any? turtles [stop]
+  if not any? hawks [stop]
+  if not any? caterpillars [stop]
+  if ticks = 500 [stop]
   move-animals
   update-lives
   reproduce
@@ -74,7 +76,7 @@ to move-hawks
 
 
   ask hawks [
-    ifelse any? caterpillars in-radius eagle-vision
+    ifelse any? caterpillars in-radius hawk-vision
     [
       ifelse not any? caterpillars in-radius movement-value [
         face min-one-of caterpillars [distance myself]
@@ -204,10 +206,10 @@ to-report coin-flip?
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-492
-6
-929
-444
+560
+25
+1413
+879
 -1
 -1
 13.0
@@ -220,10 +222,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--16
-16
--16
-16
+-32
+32
+-32
+32
 0
 0
 1
@@ -248,9 +250,9 @@ NIL
 1
 
 BUTTON
-61
+58
 322
-124
+121
 355
 NIL
 go\n
@@ -265,30 +267,15 @@ NIL
 1
 
 SLIDER
-6
 8
-178
-41
-num-caterpillars
-num-caterpillars
-1
-100
-60.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-5
+22
+180
 55
-177
-88
-num-hawks
-num-hawks
+num-caterpillars
+num-caterpillars
 1
-100
-2.0
+1000
+100.0
 1
 1
 NIL
@@ -296,8 +283,23 @@ HORIZONTAL
 
 SLIDER
 8
+63
+180
+96
+num-hawks
+num-hawks
+1
+1000
+100.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+7
 104
-181
+179
 137
 leaves-percentage
 leaves-percentage
@@ -310,40 +312,40 @@ NIL
 HORIZONTAL
 
 SLIDER
-202
-8
-375
-41
+221
+34
+417
+67
 max-hawk-movement
 max-hawk-movement
 0
 100
-8.0
+4.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-187
-62
-382
-95
+222
+88
+417
+121
 max-caterpillar-movement
 max-caterpillar-movement
 0
 100
-7.0
+2.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-201
-129
-374
-162
+231
+134
+410
+167
 energy-from-leaves
 energy-from-leaves
 1
@@ -355,10 +357,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-201
-178
-379
-211
+231
+183
+409
+216
 energy-from-caterpillar
 energy-from-caterpillar
 1
@@ -370,25 +372,25 @@ NIL
 HORIZONTAL
 
 SLIDER
-192
-234
-405
-267
+215
+240
+431
+273
 reproduce-caterpillar-percent
 reproduce-caterpillar-percent
 0
 100
-25.0
+20.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-203
-277
-391
-310
+215
+283
+430
+316
 reproduce-hawk-percent
 reproduce-hawk-percent
 01
@@ -415,10 +417,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-25
-192
-198
-225
+6
+183
+179
+216
 regrow-by-tick
 regrow-by-tick
 1
@@ -430,10 +432,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-0
-226
-172
-259
+5
+224
+177
+257
 max-leaves
 max-leaves
 1
@@ -445,30 +447,30 @@ NIL
 HORIZONTAL
 
 SLIDER
-212
-324
-385
-357
-eagle-vision
-eagle-vision
+215
+330
+430
+363
+hawk-vision
+hawk-vision
 1
 100
-10.0
+5.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-217
-368
-390
-401
+216
+371
+431
+404
 caterpillar-vision
 caterpillar-vision
 1
 100
-5.0
+2.0
 1
 1
 NIL
@@ -483,16 +485,16 @@ caterpillar-reproduce-tick
 caterpillar-reproduce-tick
 0
 100
-10.0
+15.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-11
+6
 407
-184
+197
 440
 hawk-reproduce-tick
 hawk-reproduce-tick
@@ -503,6 +505,58 @@ hawk-reproduce-tick
 1
 NIL
 HORIZONTAL
+
+MONITOR
+357
+454
+539
+499
+Hawk Population
+count hawks
+2
+1
+11
+
+MONITOR
+357
+504
+539
+549
+Caterpillar Population
+count caterpillars
+2
+1
+11
+
+MONITOR
+357
+554
+541
+599
+Leaf Count
+Count leaves
+17
+1
+11
+
+PLOT
+10
+453
+339
+643
+Hawk Caterpillar Population Plot
+Ticks
+Population
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"hawks" 1.0 0 -2674135 true "" "plot count hawks"
+"caterpillars" 1.0 0 -1184463 true "" "plot count caterpillars"
 
 @#$#@#$#@
 ## WHAT IS IT?
